@@ -1,1 +1,1 @@
-echo "# mulesoft-codebase" >> README.md
+# monk-destination
