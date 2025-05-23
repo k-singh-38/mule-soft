@@ -1,0 +1,66 @@
+package com.example.hl7;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class AI_PoC_Simple_FilterCollaboration {
+
+    public String processMessage(String messageString) {
+        Map<String, Object> inputMap = new HashMap<>();
+        Map<String, Object> outputMap = new HashMap<>();
+        boolean skip = false;
+
+        try {
+            inputMap = parseHl7Message(messageString);
+            outputMap.clear();
+
+            if (inputMap.containsKey("MSA")) {
+                List<Map<String, String>> msaSegments = (List<Map<String, String>>) inputMap.get("MSA");
+                if (!msaSegments.isEmpty()) {
+                    log("Multiple MSA segments found.");
+                    String msaTextMessage = msaSegments.get(0).get("MSA-3-text_message");
+
+                    if (msaTextMessage.contains("ZZZ")) {
+                        skip = true;
+                        log("Message will be skipped.");
+                    } else {
+                        skip = false;
+                        log("Message will be processed.");
+                    }
+                } else {
+                    log("No MSA segments found.");
+                    skip = false;
+                }
+            } else {
+                log("No MSA segments found.");
+                skip = false;
+            }
+
+            if (skip) {
+                outputMap.clear();
+            } else {
+                outputMap.put("MSH", inputMap.get("MSH"));
+                outputMap.put("MSA", inputMap.get("MSA"));
+            }
+
+            String processedMessage = convertToString(outputMap);
+            inputMap.clear();
+            outputMap.clear();
+            return processedMessage;
+        } catch (Exception error) {
+            return "";
+        }
+    }
+
+    private Map<String, Object> parseHl7Message(String messageString) {
+        return new HashMap<>();
+    }
+
+    private void log(String message) {
+    }
+
+    private String convertToString(Map<String, Object> outputMap) {
+        return "";
+    }
+}
