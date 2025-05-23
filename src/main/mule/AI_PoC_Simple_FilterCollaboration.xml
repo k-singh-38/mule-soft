@@ -1,0 +1,42 @@
+<flow name="AI_PoC_Simple_FilterCollaboration">
+  <http:listener config-ref="HTTP_Listener_Config" path="/hl7_ack" doc:name="HTTP Listener"/>
+  <transform-message doc:name="Transform Message">
+    <input-payload mimeType="application/xml"/>
+    <output mimeType="application/json"/>
+    <dw:transform-message>
+      <dw:set-payload>
+        <![CDATA[
+          %dw 2.0
+          output application/json
+          var input_map = {}
+          var output_map = {}
+          var skip = false
+          
+          input_map = payload
+          if (input_map.MSA != null) {
+            log("MSA segments found: " ++ sizeOf(input_map.MSA))
+            if (input_map.MSA[0].MSA-3-text_message == "ZZZ") 
+              skip = true
+            else {
+              output_map.MSH = input_map.MSH
+              output_map.MSA = input_map.MSA
+            }
+          }
+          if (skip) {
+            output_map = {}
+          }
+          var result = output_map as String
+          input_map = {}
+          output_map = {}
+          result
+        ]]>
+      </dw:set-payload>
+    </dw:transform-message>
+  </transform-message>
+  <error-handler>
+    <on-error-continue>
+      <logger message="Error processing message" level="ERROR"/>
+      <set-payload value=""/>
+    </on-error-continue>
+  </error-handler>
+</flow>
